@@ -4,19 +4,21 @@
 
 Makesure you have install npm and NodeJs
 
-### 1. Clone
+#### 1. Clone
 
-### 2. Go to the project directory
+#### 2. Go to the project directory
 
-### 3. Run this
+#### 3. Run this
 
 ```bash
 npm install
 ```
 
-### 4. Create your mysql database
+#### 4. Create your mysql database
 
-### 5. Create ./.env
+#### 5. Create environment file
+
+./.env
 
 ```
 NODE_ENV=development
@@ -33,7 +35,9 @@ JWT_ENCRYPTION=YOUR_JWT_SECRET
 JWT_EXPIRATION=86400
 ```
 
-### 6. Create ./server/config/config.json
+#### 6. Create config file
+
+./server/config/config.json
 
 ```json
 {
