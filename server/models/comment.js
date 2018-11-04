@@ -3,14 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const Comment = sequelize.define(
     'Comment',
     {
-      content: { type: DataTypes.STRING, allowNull: false },
-      userId: {
-        type: DataTypes.INTEGER,
-        references: {
-          model: 'User',
-          key: 'id'
-        }
-      }
+      content: { type: DataTypes.STRING, allowNull: false }
     },
     {}
   );
@@ -19,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
     Comment.belongsTo(models.Post, {
       foreignKey: 'postId',
       onDelete: 'CASCADE'
+      // constraints: false
+    });
+    Comment.belongsTo(models.User, {
+      foreignKey: 'userId'
+      // constraints: false
     });
   };
   return Comment;

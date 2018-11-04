@@ -14,7 +14,13 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.Post, {
       foreignKey: 'userId',
       as: 'posts'
+      // constraints: false
     });
+    // User.hasMany(models.Friend, {
+    //   foreignKey: 'userId',
+    //   as: 'friends',
+    //   constraints: false
+    // });
   };
   return User;
 };

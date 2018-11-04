@@ -9,22 +9,28 @@ module.exports = {
   create(req, res) {
     const { username, password, displayName } = req.body;
     const hashedPassword = bcrypt.hashSync(req.body.password);
-    return User.create({ username, password: hashedPassword, displayName })
-      .then(user => {
-        const token = jwt.sign(
-          {
-            id: user.id,
-            username: user.username,
-            displayName: user.displayName
-          },
-          config.jwt_encryption,
-          {
-            expiresIn: config.jwt_expiration
-          }
-        );
-        return res.status(201).send({ token });
-      })
-      .catch(error => res.status(400).send(error));
+    return User.count({ where: { username } }).then(count => {
+      if (count !== 0) {
+        return res.status(409).send({ message: 'Username already exist!' });
+      } else {
+        User.create({ username, password: hashedPassword, displayName })
+          .then(user => {
+            const token = jwt.sign(
+              {
+                id: user.id,
+                username: user.username,
+                displayName: user.displayName
+              },
+              config.jwt_encryption,
+              {
+                expiresIn: config.jwt_expiration
+              }
+            );
+            return res.status(201).send({ token });
+          })
+          .catch(error => res.status(400).send(error));
+      }
+    });
   },
 
   //login
@@ -63,7 +69,7 @@ module.exports = {
           },
           config.jwt_encryption,
           {
-            expiresIn: config.jwt_expiration
+            expiresIn: '10h'
           }
         );
         res.status(200).send({ token });

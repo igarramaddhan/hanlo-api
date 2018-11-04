@@ -12,7 +12,7 @@ const config = {
   database: cfg.db_name,
   host: cfg.db_host,
   dialect: cfg.db_dialect,
-  logging: false,
+  logging: true,
   operatorsAliases: false
 };
 const db = {};
