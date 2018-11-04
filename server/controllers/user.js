@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 
 const config = require('../config/config');
 const { User, Post, Comment } = require('../models');
+const DB = require('../models');
 
 module.exports = {
   //create
@@ -107,5 +108,17 @@ module.exports = {
         });
       })
       .catch(error => res.status(400).send(error));
+  },
+
+  getById(req, res) {
+    const { userId } = req.params;
+    DB.sequelize
+      .query('select * from Users where id = :id;', {
+        replacements: { id: userId },
+        type: DB.sequelize.QueryTypes.SELECT
+      })
+      .then(users => {
+        res.status(200).send(users);
+      });
   }
 };
