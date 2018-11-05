@@ -3,29 +3,30 @@ const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 
 module.exports = {
-  create(req, res) {
-    const { auth, to, content } = req.body;
-    return Message.create({ from: auth.id, to, content })
-      .then(message => {
-        return res.status(201).send({ message });
-      })
-      .catch(error => res.status(400).send(error));
+  async create(req, res) {
+    try {
+      const { auth, to, content } = req.body;
+      const message = await Message.create({ from: auth.id, to, content });
+      res.status(201).send({ message });
+    } catch (error) {
+      res.status(400).send(error);
+    }
   },
 
-  get(req, res) {
-    const { auth } = req.body;
-    return Message.findAll({
-      // attributes: { exclude: ['userId'] },
-      where: {
-        [Op.or]: [{ from: auth.id }, { to: auth.id }]
-      }
-      // group: 'from'
-    })
-      .then(messages => {
-        return res.status(200).send({
-          messages
-        });
-      })
-      .catch(error => res.status(400).send(error));
+  async get(req, res) {
+    try {
+      const { auth } = req.body;
+      const messages = await Message.findAll({
+        where: {
+          [Op.or]: [{ from: auth.id }, { to: auth.id }]
+        }
+      });
+
+      res.status(200).send({
+        messages
+      });
+    } catch (error) {
+      res.status(400).send(error);
+    }
   }
 };

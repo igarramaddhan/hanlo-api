@@ -7,61 +7,19 @@ const DB = require('../models');
 
 module.exports = {
   //create
-  create(req, res) {
-    const { username, password, displayName } = req.body;
-    const hashedPassword = bcrypt.hashSync(req.body.password);
-    return User.count({ where: { username } }).then(count => {
+  async create(req, res) {
+    try {
+      const { username, password, displayName } = req.body;
+      const hashedPassword = bcrypt.hashSync(req.body.password);
+      const count = await User.count({ where: { username } });
       if (count !== 0) {
-        return res.status(409).send({ message: 'Username already exist!' });
+        res.status(409).send({ message: 'Username already exist!' });
       } else {
-        User.create({ username, password: hashedPassword, displayName })
-          .then(user => {
-            const token = jwt.sign(
-              {
-                id: user.id,
-                username: user.username,
-                displayName: user.displayName
-              },
-              config.jwt_encryption,
-              {
-                expiresIn: config.jwt_expiration
-              }
-            );
-            return res.status(201).send({ token });
-          })
-          .catch(error => res.status(400).send(error));
-      }
-    });
-  },
-
-  //login
-  login(req, res) {
-    const { username, password } = req.body;
-    return User.findOne({
-      where: { username },
-      include: [
-        {
-          model: Post,
-          as: 'posts',
-          include: [
-            {
-              model: Comment,
-              as: 'comments'
-            }
-          ]
-        }
-      ]
-    })
-      .then(user => {
-        if (!user) {
-          return res.status(404).send({
-            message: 'User not found!'
-          });
-        }
-        const passwordIsValid = bcrypt.compareSync(password, user.password);
-        if (!passwordIsValid)
-          return res.status(401).send({ message: 'unauthenticated' });
-
+        const user = await User.create({
+          username,
+          password: hashedPassword,
+          displayName
+        });
         const token = jwt.sign(
           {
             id: user.id,
@@ -70,55 +28,110 @@ module.exports = {
           },
           config.jwt_encryption,
           {
-            expiresIn: '10h'
+            expiresIn: config.jwt_expiration
           }
         );
-        res.status(200).send({ token });
-      })
-      .catch(error => res.status(400).send(error));
+        res.status(201).send({ token });
+      }
+    } catch (error) {
+      res.status(400).send(error);
+    }
+  },
+
+  //login
+  async login(req, res) {
+    try {
+      const { username, password } = req.body;
+      const user = await User.findOne({
+        where: { username },
+        include: [
+          {
+            model: Post,
+            as: 'posts',
+            include: [
+              {
+                model: Comment,
+                as: 'comments'
+              }
+            ]
+          }
+        ]
+      });
+
+      if (!user) {
+        return res.status(404).send({
+          message: 'User not found!'
+        });
+      }
+      const passwordIsValid = bcrypt.compareSync(password, user.password);
+      if (!passwordIsValid)
+        res.status(401).send({ message: 'unauthenticated' });
+
+      const token = jwt.sign(
+        {
+          id: user.id,
+          username: user.username,
+          displayName: user.displayName
+        },
+        config.jwt_encryption,
+        {
+          expiresIn: '10h'
+        }
+      );
+      res.status(200).send({ token });
+    } catch (error) {
+      res.status(400).send(error);
+    }
   },
 
   //get user
-  me(req, res) {
-    const { auth } = req.body;
-    return User.findByPk(auth.id, {
-      include: [
-        {
-          model: Post,
-          as: 'posts',
-          include: [
-            {
-              model: Comment,
-              as: 'comments'
-            }
-          ]
-        }
-      ]
-    })
-      .then(user => {
-        if (!user) {
-          return res.status(404).send({
-            message: 'User not found!'
-          });
-        }
+  async me(req, res) {
+    try {
+      const { auth } = req.body;
+      const user = await User.findByPk(auth.id, {
+        include: [
+          {
+            model: Post,
+            as: 'posts',
+            include: [
+              {
+                model: Comment,
+                as: 'comments'
+              }
+            ]
+          }
+        ]
+      });
 
-        const { username, displayName, posts } = user;
-        res.status(200).send({
-          user: { username, displayName, posts }
+      if (!user) {
+        res.status(404).send({
+          message: 'User not found!'
         });
-      })
-      .catch(error => res.status(400).send(error));
+      }
+
+      const { username, displayName, posts } = user;
+      res.status(200).send({
+        user: { username, displayName, posts }
+      });
+    } catch (error) {
+      res.status(400).send(error);
+    }
   },
 
-  getById(req, res) {
-    const { userId } = req.params;
-    DB.sequelize
-      .query('select * from Users where id = :id;', {
-        replacements: { id: userId },
-        type: DB.sequelize.QueryTypes.SELECT
-      })
-      .then(users => {
-        res.status(200).send(users);
-      });
+  async getById(req, res) {
+    try {
+      const { userId } = req.params;
+      const user = await DB.sequelize.query(
+        'select * from Users where id = :id;',
+        {
+          replacements: { id: userId },
+          type: DB.sequelize.QueryTypes.SELECT
+        }
+      );
+
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(400).send(error);
+    }
   }
 };

@@ -1,53 +1,61 @@
 const { User, Post, Comment, Friend } = require('../models');
 
 module.exports = {
-  create(req, res) {
-    const { auth, friendId } = req.body;
-    return Friend.findAll({
-      attributes: { exclude: ['userId'] },
-      where: { userId: auth.id, friendId: friendId },
-      include: [
-        {
-          model: User,
-          attributes: ['id', 'username']
-        }
-      ]
-    }).then(friends => {
+  async create(req, res) {
+    try {
+      const { auth, friendId } = req.body;
+      const friends = await Friend.findAll({
+        attributes: { exclude: ['userId'] },
+        where: { userId: auth.id, friendId: friendId },
+        include: [
+          {
+            model: User,
+            attributes: ['id', 'username']
+          }
+        ]
+      });
+
       if (friends.length === 0) {
         if (auth.id === friendId) {
-          return res
+          res
             .status(409)
             .send({ message: 'You cannot add yourself as friend' });
         } else {
-          Friend.create({ userId: auth.id, friendId: friendId })
-            .then(friend => {
-              return res.status(201).send({ friend });
-            })
-            .catch(error => res.status(400).send(error));
+          const friend = await Friend.create({
+            userId: auth.id,
+            friendId: friendId
+          });
+          res.status(201).send({ friend });
         }
       } else {
-        return res.status(409).send({ message: 'Friend already exist' });
+        res.status(409).send({ message: 'Friend already exist' });
       }
-    });
+    } catch (error) {
+      console.log(error);
+      res.status(400).send(error);
+    }
   },
 
-  get(req, res) {
-    const { auth } = req.body;
-    return Friend.findAll({
-      attributes: { exclude: ['userId'] },
-      where: { userId: auth.id },
-      include: [
-        {
-          model: User,
-          attributes: ['id', 'username']
-        }
-      ]
-    })
-      .then(friends => {
-        res.status(200).send({
-          friends
-        });
-      })
-      .catch(error => res.status(400).send(error));
+  async get(req, res) {
+    try {
+      const { auth } = req.body;
+      const friends = await Friend.findAll({
+        attributes: { exclude: ['userId'] },
+        where: { userId: auth.id },
+        include: [
+          {
+            model: User,
+            attributes: ['id', 'username']
+          }
+        ]
+      });
+
+      res.status(200).send({
+        friends
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(400).send(error);
+    }
   }
 };
