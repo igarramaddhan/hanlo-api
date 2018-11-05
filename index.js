@@ -3,6 +3,7 @@ const logger = require('morgan');
 const bodyParser = require('body-parser');
 const CONFIG = require('./server/config/config');
 const app = express();
+const Seed = require('./server/seeders');
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -21,7 +22,9 @@ models.sequelize
 
 if (CONFIG.app === 'development') {
   // models.sequelize.sync(); //creates table if they do not already exist
-  models.sequelize.sync({ force: true }); //deletes all tables then recreates them useful for testing and development purposes
+  models.sequelize.sync({ force: true }).then(() => {
+    Seed();
+  }); //deletes all tables then recreates them useful for testing and development purposes
 }
 
 require('./server/routes')(app);
