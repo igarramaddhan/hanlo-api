@@ -1,4 +1,4 @@
-const { User, Post, Comment } = require('../models');
+const { User, Post, Comment, Friend, sequelize } = require('../models');
 
 module.exports = {
   create(req, res) {
@@ -12,38 +12,35 @@ module.exports = {
 
   get(req, res) {
     const { auth } = req.body;
-    return Post.findAll({
-      order: [['createdAt', 'DESC']],
-      attributes: { exclude: ['userId'] },
-      include: [
-        {
-          model: User,
-          attributes: ['id', 'username']
-        },
-        {
-          model: Comment,
-          as: 'comments'
-        }
-      ]
+    return Friend.findAll({
+      where: { userId: auth.id }
     })
-      .then(posts => {
-        let data = [];
-        let index = 0;
-        // while (index < posts.length - 1) {
-        //   data.push({
-        //     id: posts[index].id,
-        //     user: {
-        //       id: posts[index].userId,
-        //       username: posts[index].User.username
-        //     },
-        //     content: posts[index].content,
-        //     createdAt: posts[index].createdAt,
-        //     comment: posts[index].comments
-        //   });
-        // }
-        res.status(200).send({
-          posts
-        });
+      .then(async friends => {
+        const x = await friends;
+        const friendIds = x.map(val => val.id);
+        return Post.findAll({
+          order: [['createdAt', 'DESC']],
+          attributes: { exclude: ['userId'] },
+          where: { userId: { [sequelize.Op.in]: friendIds } },
+          include: [
+            {
+              model: User,
+              attributes: ['id', 'username']
+            },
+            {
+              model: Comment,
+              as: 'comments'
+            }
+          ]
+        })
+          .then(posts => {
+            let data = [];
+            let index = 0;
+            res.status(200).send({
+              posts
+            });
+          })
+          .catch(error => res.status(400).send(error));
       })
       .catch(error => res.status(400).send(error));
   }
