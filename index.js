@@ -1,10 +1,12 @@
 const express = require('express');
 const logger = require('morgan');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const CONFIG = require('./server/config/config');
 const app = express();
 const Seed = require('./server/seeders');
 
+app.use(cors());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 
