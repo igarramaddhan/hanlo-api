@@ -32,28 +32,33 @@ module.exports = {
       let msg = [];
       for (let i = 0; i < messages.length; i++) {
         const el = messages[i];
+
+        // GET current chat friend id
         let current;
         if (el.from === auth.id || el.to === auth.id) {
           current = el.to;
         }
-        let chat = [];
-        for (let j = 0; j < messages.length; j++) {
-          const element = messages[j];
-          if (
-            (element.from === auth.id && element.to === current) ||
-            (element.to === auth.id && element.from === current)
-          ) {
-            chat.push(element);
+        let index = msg.findIndex(val => val.user[0].id === current);
+        if (index === -1) {
+          let chat = [];
+          for (let j = 0; j < messages.length; j++) {
+            const element = messages[j];
+            if (
+              (element.from === auth.id && element.to === current) ||
+              (element.to === auth.id && element.from === current)
+            ) {
+              chat.push(element);
+            }
           }
+          const user = await sequelize.query(
+            'select id,username,displayName from Users where id = :id;',
+            {
+              replacements: { id: current },
+              type: sequelize.QueryTypes.SELECT
+            }
+          );
+          if (chat.length !== 0) msg.push({ chat, user });
         }
-        const user = await sequelize.query(
-          'select id,username,displayName from Users where id = :id;',
-          {
-            replacements: { id: current },
-            type: sequelize.QueryTypes.SELECT
-          }
-        );
-        if (chat.length !== 0) msg.push({ chat, user });
       }
 
       res.status(200).send({
