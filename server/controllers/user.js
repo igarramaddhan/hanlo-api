@@ -1,9 +1,12 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const Sequelize = require('sequelize');
 
 const config = require('../config/config');
 const { User, Post, Comment } = require('../models');
 const DB = require('../models');
+
+const Op = Sequelize.Op;
 
 module.exports = {
   //create
@@ -131,6 +134,24 @@ module.exports = {
 
       res.status(200).send(user);
     } catch (error) {
+      res.status(400).send(error);
+    }
+  },
+
+  async getByUsername(req, res) {
+    try {
+      const { auth } = req.body;
+      const { username } = req.params;
+      const users = await User.findAll({
+        where: { username: { [Op.like]: `%${username}%` } },
+        attributes: { exclude: ['password'] }
+      });
+
+      res.status(200).send({
+        users
+      });
+    } catch (error) {
+      console.log(error);
       res.status(400).send(error);
     }
   }
