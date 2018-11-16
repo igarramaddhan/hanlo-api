@@ -1,4 +1,5 @@
 const { User, Post, Comment, Friend, sequelize } = require('../models');
+const Sequelize = require('sequelize');
 
 module.exports = {
   async create(req, res) {
@@ -22,7 +23,9 @@ module.exports = {
       friendIds.push(auth.id);
       const posts = await Post.findAll({
         order: [['createdAt', 'DESC']],
-        attributes: { exclude: ['userId'] },
+        attributes: {
+          exclude: ['userId']
+        },
         where: { userId: { [sequelize.Op.in]: friendIds } },
         include: [
           {

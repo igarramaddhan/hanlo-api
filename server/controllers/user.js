@@ -122,7 +122,7 @@ module.exports = {
     try {
       const { userId } = req.params;
       const user = await DB.sequelize.query(
-        'select * from Users where id = :id;',
+        'select id,username,displayName from Users where id = :id;',
         {
           replacements: { id: userId },
           type: DB.sequelize.QueryTypes.SELECT

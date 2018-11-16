@@ -27,6 +27,8 @@ if (CONFIG.app === 'development') {
   models.sequelize.sync({ force: true }).then(() => {
     Seed();
   }); //deletes all tables then recreates them useful for testing and development purposes
+}else {
+	models.sequelize.sync();
 }
 
 require('./server/routes')(app);

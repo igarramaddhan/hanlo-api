@@ -5,6 +5,6 @@ const auth = require('../middlewares/auth');
 const { comment } = require('../controllers');
 
 app.post('/', auth, comment.create);
-// app.get('/', auth, post.get);
+app.get('/:postId', auth, comment.get);
 
 module.exports = app;
