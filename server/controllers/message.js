@@ -35,8 +35,10 @@ module.exports = {
 
         // GET current chat friend id
         let current;
-        if (el.from === auth.id || el.to === auth.id) {
+        if (el.from === auth.id) {
           current = el.to;
+        } else if (el.to === auth.id) {
+          current = el.from;
         }
         let index = msg.findIndex(val => val.user[0].id === current);
         if (index === -1) {
