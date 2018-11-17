@@ -96,10 +96,17 @@ module.exports = {
           {
             model: Post,
             as: 'posts',
+            attributes: {
+              exclude: ['userId']
+            },
             include: [
               {
                 model: Comment,
                 as: 'comments'
+              },
+              {
+                model: User,
+                attributes: ['id', 'username']
               }
             ]
           }
