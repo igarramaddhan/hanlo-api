@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const Sequelize = require('sequelize');
 
 const config = require('../config/config');
-const { User, Post, Comment } = require('../models');
+const { User, Post, Comment, Friend } = require('../models');
 const DB = require('../models');
 
 const Op = Sequelize.Op;
@@ -147,8 +147,31 @@ module.exports = {
         attributes: { exclude: ['password'] }
       });
 
+      const friends = await Friend.findAll({
+        attributes: { exclude: ['userId'] },
+        where: { userId: auth.id }
+      });
+
+      let userWithFriendStatus = users.map(val => {
+        return {
+          id: val.id,
+          username: val.username,
+          displayName: val.displayName
+        };
+      });
+      userWithFriendStatus.forEach(user => {
+        friends.forEach(friend => {
+          if (user.id === friend.friendId) {
+            user.isFriend = true;
+          } else {
+            user.isFriend = false;
+          }
+          console.log(user);
+        });
+      });
+
       res.status(200).send({
-        users
+        users: userWithFriendStatus
       });
     } catch (error) {
       console.log(error);
