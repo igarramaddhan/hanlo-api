@@ -161,7 +161,7 @@ module.exports = {
       });
       userWithFriendStatus.forEach(user => {
         friends.forEach(friend => {
-          if (user.id === friend.friendId && user.id !== auth.id) {
+          if (user.id === friend.friendId && user.id === auth.id) {
             user.isFriend = true;
           } else {
             user.isFriend = false;
