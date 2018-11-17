@@ -45,5 +45,36 @@ module.exports = {
     } catch (error) {
       res.status(400).send(error);
     }
+  },
+
+  async getById(req, res) {
+    try {
+      const { auth } = req.body;
+      const { userId } = req.params;
+
+      const posts = await Post.findAll({
+        order: [['createdAt', 'DESC']],
+        attributes: {
+          exclude: ['userId']
+        },
+        where: { userId },
+        include: [
+          {
+            model: User,
+            attributes: ['id', 'username']
+          },
+          {
+            model: Comment,
+            as: 'comments'
+          }
+        ]
+      });
+
+      res.status(200).send({
+        posts
+      });
+    } catch (error) {
+      res.status(400).send(error);
+    }
   }
 };

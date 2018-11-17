@@ -50,8 +50,17 @@ module.exports = {
         ]
       });
 
+      let friendWithStatus = friends.map(friend => {
+        return {
+          id: friend.User.id,
+          username: friend.User.username,
+          displayName: friend.User.displayName,
+          isFriend: true
+        };
+      });
+
       res.status(200).send({
-        friends
+        friends: friendWithStatus
       });
     } catch (error) {
       console.log(error);
